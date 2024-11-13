@@ -1,0 +1,6 @@
+﻿services:
+  websocketchat.api:
+    image: websocketchat.api
+    build:
+      context: .
+      dockerfile: WebSocketChat.Api/Dockerfile
