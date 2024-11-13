@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using WebSocketChat.Shared.Endpoint.Base.Payload;
+using WebSocketChat.Shared.Model;
 
 namespace WebSocketChat.Shared.Endpoint.Payload;
 
@@ -8,4 +9,6 @@ namespace WebSocketChat.Shared.Endpoint.Payload;
 public class ChatHubResponse : ResponseBase
 {
     public ChatHubResponseType ResponseType { get; set; }
+    
+    public IEnumerable<Peer>? Peers { get; set; }
 }

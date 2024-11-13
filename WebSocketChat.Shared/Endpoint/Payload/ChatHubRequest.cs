@@ -11,7 +11,9 @@ public class ChatHubRequest : RequestBase
     public new const string Route = "/";
     public override string RequestRoute() => Route;
 
-    public required Guid UserId { get; set; }
+    public required Guid PeerId { get; set; }
+    
+    public string? Nickname { get; set; }
     
     public required ChatHubRequestType RequestType { get; set; }
 }

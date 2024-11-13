@@ -4,5 +4,5 @@ public enum ChatHubResponseType
 {
     Success,
     Failure,
-    PeerList
+    PeersConnected
 }

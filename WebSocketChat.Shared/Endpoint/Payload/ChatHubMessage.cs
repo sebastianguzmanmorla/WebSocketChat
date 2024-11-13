@@ -7,7 +7,7 @@ namespace WebSocketChat.Shared.Endpoint.Payload;
 [JsonDerivedType(typeof(ChatHubMessage), nameof(ChatHubMessage))]
 public class ChatHubMessage : MessageBase
 {
-    public required Guid UserId { get; set; }
+    public required Guid PeerId { get; set; }
     
     public required ChatHubMessageType MessageType { get; set; }
 }

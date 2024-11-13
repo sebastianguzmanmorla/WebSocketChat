@@ -4,5 +4,6 @@ public enum ChatHubRequestType
 {
     Login,
     Logout,
-    PeerList
+    SetNickname,
+    GetPeersConnected
 }

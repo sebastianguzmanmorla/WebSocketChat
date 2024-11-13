@@ -1,6 +1,23 @@
-﻿services:
-  websocketchat.api:
-    image: websocketchat.api
+﻿name: websocketchat
+services:
+  api:
+    container_name: websocketchat-api
+    restart: unless-stopped
+    ports:
+      - "5230:8080"
     build:
       context: .
       dockerfile: WebSocketChat.Api/Dockerfile
+  redis:
+    container_name: websocketchat-redis
+    restart: unless-stopped
+    image: redis/redis-stack-server:latest
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -h localhost ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - redis:/data/
+volumes:
+  redis:

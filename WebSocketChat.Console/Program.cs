@@ -1,7 +1,7 @@
 ﻿using WebSocketChat.Shared.Endpoint;
 using WebSocketChat.Shared.Endpoint.Payload;
 
-Guid userId = Guid.CreateVersion7();
+Guid peerId = Guid.CreateVersion7();
 
 ChatHubEndpoint chatHubEndpoint = new()
 {
@@ -17,8 +17,27 @@ await chatHubEndpoint.Connect();
 
 ChatHubResponse? loginResponse = await chatHubEndpoint.Send(new ChatHubRequest()
 {
-    UserId = userId,
-    RequestType = ChatHubRequestType.Login
+    PeerId = peerId,
+    RequestType = ChatHubRequestType.Login,
+    Nickname = "John Doe"
+});
+
+ChatHubResponse? peerListResponse = await chatHubEndpoint.Send(new ChatHubRequest()
+{
+    PeerId = peerId,
+    RequestType = ChatHubRequestType.GetPeersConnected
+});
+
+ChatHubResponse? logoutResponse = await chatHubEndpoint.Send(new ChatHubRequest()
+{
+    PeerId = peerId,
+    RequestType = ChatHubRequestType.Logout
+});
+
+peerListResponse = await chatHubEndpoint.Send(new ChatHubRequest()
+{
+    PeerId = peerId,
+    RequestType = ChatHubRequestType.GetPeersConnected
 });
 
 await chatHubEndpoint.Disconnect("bye");
