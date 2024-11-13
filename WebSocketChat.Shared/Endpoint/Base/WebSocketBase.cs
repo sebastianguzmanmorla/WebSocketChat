@@ -30,6 +30,8 @@ public abstract class WebSocketBase<TMessage, TRequest, TResponse, TWebSocketHel
 
     public WebSocketState State => Helper.State;
 
+    public int RequestTimeout { get; init; } = 2000;
+
     internal WebSocketBase(TWebSocketHelper webSocketHelper)
     {
         Helper = webSocketHelper;
@@ -93,7 +95,7 @@ public abstract class WebSocketBase<TMessage, TRequest, TResponse, TWebSocketHel
 
         if (await Helper.Send(request))
         {
-            response = Task.WaitAny([responseSource.Task], 2000) == 0 ? responseSource.Task.Result : null;
+            response = Task.WaitAny([responseSource.Task], RequestTimeout) == 0 ? responseSource.Task.Result : null;
         }
         else
         {

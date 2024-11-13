@@ -3,27 +3,22 @@ using System.Net.WebSockets;
 
 namespace WebSocketChat.Shared.Endpoint.Base.Helper;
 
-public sealed class WebSocketHelperServer : WebSocketHelperBase<WebSocket>
+public sealed class WebSocketHelperServer
+(
+    WebSocket connection,
+    CancellationToken? cancelToken = null,
+    ILogger? logger = null
+) : WebSocketHelperBase<WebSocket>(connection, cancelToken, logger)
 {
-    private readonly TaskCompletionSource _closeSource;
-
-    public WebSocketHelperServer
-    (
-        WebSocket connection,
-        CancellationToken? cancelToken = null,
-        ILogger? logger = null
-    ) : base(connection, cancelToken, logger)
-    {
-        _closeSource = new();
-
-        OnReceiveClose += (_, _) =>
-        {
-            _closeSource.SetResult();
-        };
-    }
+    private readonly TaskCompletionSource _closeSource = new();
 
     public Task Wait()
     {
+        OnClose += (_, _) =>
+        {
+            _closeSource.TrySetResult();
+        };
+        
         return _closeSource.Task;
     }
 }

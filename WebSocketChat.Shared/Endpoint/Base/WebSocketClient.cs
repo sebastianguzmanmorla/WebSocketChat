@@ -88,6 +88,13 @@ public abstract class WebSocketClient<TMessage, TRequest, TResponse> : WebSocket
     (
         WebSocket connection,
         CancellationToken? cancelToken = null,
-        ILogger? logger = null
-    ) => new(connection, cancelToken, logger);
+        ILogger? logger = null,
+        int requestTimeOut = 2000
+    )
+    {
+        return new WebSocketServer<TMessage, TRequest, TResponse>(connection, cancelToken, logger)
+        {
+            RequestTimeout = requestTimeOut
+        };
+    }
 }

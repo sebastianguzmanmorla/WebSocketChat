@@ -59,11 +59,6 @@ app.MapGet(ChatHubRequest.Route, async (context) => {
     }
 });
 
-WebSocketOptions webSocketOptions = new()
-{
-    KeepAliveInterval = TimeSpan.FromMinutes(2)
-};
-
-app.UseWebSockets(webSocketOptions);
+app.UseWebSockets();
 
 await app.RunAsync();

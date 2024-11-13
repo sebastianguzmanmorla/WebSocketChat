@@ -21,17 +21,13 @@ public abstract class WebSocketHelperBase<TWebSocket> : IAsyncDisposable
     };
 
     public delegate void ErrorHandler(Exception exception);
-    public delegate void MessageHandler(WebSocketMessageType type, byte[] bytes);
     public delegate void MessageBinaryHandler(byte[] bytes);
     public delegate void MessageTextHandler(string message);
-    public delegate void MessageCloseHandler(WebSocketCloseStatus? status, string? description);
     public delegate void CloseHandler(WebSocketCloseStatus status, string? description);
 
     public event ErrorHandler? OnError;
-    public event MessageHandler? OnReceive;
     public event MessageBinaryHandler? OnReceiveBinary;
     public event MessageTextHandler? OnReceiveText;
-    public event MessageCloseHandler? OnReceiveClose;
     public event CloseHandler? OnClose;
 
     public WebSocketState State => Connection?.State ?? WebSocketState.None;
@@ -77,33 +73,29 @@ public abstract class WebSocketHelperBase<TWebSocket> : IAsyncDisposable
 
                 completeBuffer.AddRange(buffer.Take(result.Count));
 
-                if (result.EndOfMessage && result.MessageType != WebSocketMessageType.Close)
+                if (!result.EndOfMessage || result.MessageType == WebSocketMessageType.Close) continue;
+
+                if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    OnReceive?.Invoke(result.MessageType, [.. completeBuffer]);
+                    string message = Encoding.UTF8.GetString([.. completeBuffer]);
 
-                    if (result.MessageType == WebSocketMessageType.Text)
-                    {
-                        string message = Encoding.UTF8.GetString([.. completeBuffer]);
+                    _logger?.LogDebug("Received string: {string}", message);
 
-                        _logger?.LogDebug("Received string: {string}", message);
-
-                        OnReceiveText?.Invoke(message);
-                    }
-                    else
-                    {
-                        _logger?.LogDebug("Received bytes: {int}", completeBuffer.Count);
-
-                        OnReceiveBinary?.Invoke([.. completeBuffer]);
-                    }
-
-                    completeBuffer.Clear();
+                    OnReceiveText?.Invoke(message);
                 }
+                else
+                {
+                    _logger?.LogDebug("Received bytes: {int}", completeBuffer.Count);
+
+                    OnReceiveBinary?.Invoke([.. completeBuffer]);
+                }
+
+                completeBuffer.Clear();
             } while (!result.CloseStatus.HasValue && !CancelToken.IsCancellationRequested);
 
             if (result.MessageType == WebSocketMessageType.Close)
             {
                 OnClose?.Invoke(result.CloseStatus ?? WebSocketCloseStatus.Empty, result.CloseStatusDescription);
-                OnReceiveClose?.Invoke(result.CloseStatus, result.CloseStatusDescription);
             }
 
             if (Connection.State != WebSocketState.Closed)
