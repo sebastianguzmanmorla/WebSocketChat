@@ -1,23 +1,21 @@
 ﻿using System.Net.WebSockets;
 using System.Text.Json;
 using WebSocketChat.Shared.Endpoint.Base.Helper;
+using WebSocketChat.Shared.Endpoint.Base.Interfaces;
 using WebSocketChat.Shared.Endpoint.Base.Payload;
 
 namespace WebSocketChat.Shared.Endpoint.Base;
 
-public abstract class WebSocketBase<TMessage, TRequest, TResponse, TWebSocketHelper, TWebSocket> : IAsyncDisposable
-    where TMessage : MessageBase
-    where TRequest : RequestBase
-    where TResponse : ResponseBase
+public abstract class WebSocketBase<TWebSocketHelper, TWebSocket> : IAsyncDisposable
     where TWebSocketHelper : WebSocketHelperBase<TWebSocket>
     where TWebSocket : WebSocket
 {
     internal TWebSocketHelper Helper { get; }
 
 
-    public delegate void MessageHandler(TMessage message);
-    public delegate void RequestHandler(TRequest request);
-    public delegate void ResponseHandler(TResponse response);
+    public delegate void MessageHandler(IMessage message);
+    public delegate void RequestHandler(IRequest request);
+    public delegate void ResponseHandler(IResponse response);
 
     public event MessageHandler? OnMessage;
     public event RequestHandler? OnRequest;
@@ -60,13 +58,13 @@ public abstract class WebSocketBase<TMessage, TRequest, TResponse, TWebSocketHel
         {
             switch (payload)
             {
-                case TMessage message:
+                case IMessage message:
                     OnMessage?.Invoke(message);
                     break;
-                case TRequest request:
+                case IRequest request:
                     OnRequest?.Invoke(request);
                     break;
-                case TResponse response:
+                case IResponse response:
                     OnResponse?.Invoke(response);
                     break;
                 default:
@@ -80,14 +78,9 @@ public abstract class WebSocketBase<TMessage, TRequest, TResponse, TWebSocketHel
         }
     }
 
-    public async virtual Task<TResponse?> Send(TRequest request)
+    public async Task<TResponse?> SendRequest<TRequest, TResponse>(TRequest request) where TRequest : RequestBase<TResponse> where TResponse : ResponseBase
     {
         TaskCompletionSource<TResponse?> responseSource = new();
-
-        void OnResponseHandler(TResponse? response)
-        {
-            responseSource.SetResult(response);
-        }
 
         OnResponse += OnResponseHandler;
 
@@ -105,15 +98,20 @@ public abstract class WebSocketBase<TMessage, TRequest, TResponse, TWebSocketHel
         OnResponse -= OnResponseHandler;
 
         return response;
+
+        void OnResponseHandler(IResponse? serverResponse)
+        {
+            responseSource.SetResult((TResponse?)serverResponse);
+        }
     }
 
-    public async virtual Task<bool> Send(TResponse response) => await Helper.Send(response);
+    public async Task<bool> SendResponse<TResponse>(TResponse response) where TResponse : ResponseBase => await Helper.Send(response);
 
-    public async virtual Task<bool> Send(TMessage message) => await Helper.Send(message);
+    public async Task<bool> SendMessage<TMessage>(TMessage message) where TMessage : MessageBase => await Helper.Send(message);
 
-    public async virtual Task<bool> Send(byte[] bytes) => await Helper.Send(bytes);
+    public async Task<bool> SendBytes(byte[] bytes) => await Helper.Send(bytes);
 
-    public async virtual Task<bool> Send(string text) => await Helper.Send(text);
+    public async Task<bool> SendText(string text) => await Helper.Send(text);
     
     public async ValueTask DisposeAsync()
     {

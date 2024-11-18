@@ -5,10 +5,7 @@ using WebSocketChat.Shared.Endpoint.Base.Payload;
 
 namespace WebSocketChat.Shared.Endpoint.Base;
 
-public abstract class WebSocketClient<TMessage, TRequest, TResponse> : WebSocketBase<TMessage, TRequest, TResponse, WebSocketHelperClient, ClientWebSocket>
-    where TMessage : MessageBase
-    where TRequest : RequestBase
-    where TResponse : ResponseBase
+public abstract class WebSocketClient : WebSocketBase<WebSocketHelperClient, ClientWebSocket>
 {
     private string _host = "";
     public string Host
@@ -16,12 +13,11 @@ public abstract class WebSocketClient<TMessage, TRequest, TResponse> : WebSocket
         get => _host;
         set
         {
-            if (value != _host)
-            {
-                _host = value;
+            if (value == _host) return;
+            
+            _host = value;
 
-                UpdateUri();
-            }
+            UpdateUri();
         }
     }
 
@@ -29,7 +25,7 @@ public abstract class WebSocketClient<TMessage, TRequest, TResponse> : WebSocket
     {
         UriBuilder uriBuilder = new(_host)
         {
-            Path = Path
+            Path = GetPath()
         };
 
         if (Helper.State == WebSocketState.Open)
@@ -40,7 +36,9 @@ public abstract class WebSocketClient<TMessage, TRequest, TResponse> : WebSocket
         Helper.Endpoint = uriBuilder.Uri;
     }
 
-    protected abstract string Path { get; }
+    public const string Path = "/";
+
+    public virtual string GetPath() => Path;
 
     public new event WebSocketHelperBase<ClientWebSocket>.ErrorHandler? OnError;
 
@@ -54,47 +52,31 @@ public abstract class WebSocketClient<TMessage, TRequest, TResponse> : WebSocket
 
     public async Task<bool> Connect()
     {
-        if (Helper.State != WebSocketState.Open && !await Helper.Connect())
-        {
-            OnError?.Invoke(new("WebSocketClientHelper is not connected."));
+        if (Helper.State == WebSocketState.Open || await Helper.Connect()) return true;
+        
+        OnError?.Invoke(new Exception("WebSocketClientHelper is not connected."));
 
-            return false;
-        }
+        return false;
 
-        return true;
     }
 
     public async Task Disconnect(string? description = null) => await Helper.Close(description : description);
 
-    public override async Task<TResponse?> Send(TRequest request)
+    public async new Task<TResponse?> SendRequest<TRequest, TResponse>(TRequest request) where TRequest : RequestBase<TResponse> where TResponse : ResponseBase
     {
         if (Helper.State != WebSocketState.Open)
         {
             return null;
         }
 
-        return await base.Send(request);
+        return await base.SendRequest<TRequest, TResponse>(request);
     }
 
-    public override async Task<bool> Send(TResponse response) => Helper.State == WebSocketState.Open && await base.Send(response);
+    public async new Task<bool> SendResponse<TResponse>(TResponse response) where TResponse: ResponseBase => Helper.State == WebSocketState.Open && await base.SendResponse(response);
 
-    public override async Task<bool> Send(TMessage message) => Helper.State == WebSocketState.Open && await base.Send(message);
+    public async new Task<bool> SendMessage<TMessage>(TMessage message) where TMessage : MessageBase => Helper.State == WebSocketState.Open && await base.SendMessage(message);
 
-    public override async Task<bool> Send(byte[] message) => Helper.State == WebSocketState.Open && await base.Send(message);
+    public async new Task<bool> SendBytes(byte[] message) => Helper.State == WebSocketState.Open && await base.SendBytes(message);
 
-    public override async Task<bool> Send(string message) => Helper.State == WebSocketState.Open && await base.Send(message);
-
-    public static WebSocketServer<TMessage, TRequest, TResponse> HandleServer
-    (
-        WebSocket connection,
-        CancellationToken? cancelToken = null,
-        ILogger? logger = null,
-        int requestTimeOut = 2000
-    )
-    {
-        return new WebSocketServer<TMessage, TRequest, TResponse>(connection, cancelToken, logger)
-        {
-            RequestTimeout = requestTimeOut
-        };
-    }
+    public async new Task<bool> SendText(string message) => Helper.State == WebSocketState.Open && await base.SendText(message);
 }

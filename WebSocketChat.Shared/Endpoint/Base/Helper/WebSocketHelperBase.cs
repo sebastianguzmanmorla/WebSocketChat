@@ -143,7 +143,7 @@ public abstract class WebSocketHelperBase<TWebSocket> : IAsyncDisposable
     
     public async Task<bool> Send<TPayload>(TPayload payload) where TPayload : PayloadBase
     {
-        string json = JsonSerializer.Serialize(payload, typeof(TPayload), SerializerOptions);
+        string json = JsonSerializer.Serialize(payload, SerializerOptions);
 
         _logger?.LogDebug("Sending JSON: {json}", json);
 

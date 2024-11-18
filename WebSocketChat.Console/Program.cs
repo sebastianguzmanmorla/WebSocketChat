@@ -8,36 +8,31 @@ ChatHubEndpoint chatHubEndpoint = new()
     Host = "ws://localhost:5230/"
 };
 
-chatHubEndpoint.OnError += (e) => {
-    Console.WriteLine(e);
-    
-};
+chatHubEndpoint.OnError += Console.WriteLine;
 
 await chatHubEndpoint.Connect();
 
-ChatHubResponse? loginResponse = await chatHubEndpoint.Send(new ChatHubRequest()
+ChatHubLoginRequest loginRequest = new()
 {
     PeerId = peerId,
-    RequestType = ChatHubRequestType.Login,
     Nickname = "John Doe"
+};
+
+ChatHubSuccessResponse? loginResponse = await chatHubEndpoint.SendRequest<ChatHubLoginRequest, ChatHubSuccessResponse>(loginRequest);
+
+ChatHubGetPeersConnectedResponse? peerListResponse = await chatHubEndpoint.SendRequest<ChatHubGetPeersConnectedRequest, ChatHubGetPeersConnectedResponse>(new ChatHubGetPeersConnectedRequest
+{
+    PeerId = peerId
 });
 
-ChatHubResponse? peerListResponse = await chatHubEndpoint.Send(new ChatHubRequest()
+ChatHubSuccessResponse? logoutResponse = await chatHubEndpoint.SendRequest<ChatHubLogoutRequest, ChatHubSuccessResponse>(new ChatHubLogoutRequest
 {
-    PeerId = peerId,
-    RequestType = ChatHubRequestType.GetPeersConnected
+    PeerId = peerId
 });
 
-ChatHubResponse? logoutResponse = await chatHubEndpoint.Send(new ChatHubRequest()
+peerListResponse = await chatHubEndpoint.SendRequest<ChatHubGetPeersConnectedRequest, ChatHubGetPeersConnectedResponse>(new ChatHubGetPeersConnectedRequest
 {
-    PeerId = peerId,
-    RequestType = ChatHubRequestType.Logout
-});
-
-peerListResponse = await chatHubEndpoint.Send(new ChatHubRequest()
-{
-    PeerId = peerId,
-    RequestType = ChatHubRequestType.GetPeersConnected
+    PeerId = peerId
 });
 
 await chatHubEndpoint.Disconnect("bye");
