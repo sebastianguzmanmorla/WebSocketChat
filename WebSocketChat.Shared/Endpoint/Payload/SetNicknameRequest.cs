@@ -4,8 +4,8 @@ using WebSocketChat.Shared.Endpoint.Payload.Base;
 namespace WebSocketChat.Shared.Endpoint.Payload;
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = TypeProperty)]
-[JsonDerivedType(typeof(ChatHubSetNicknameRequest), nameof(ChatHubSetNicknameRequest))]
-public class ChatHubSetNicknameRequest : ChatHubRequest<ChatHubSuccessResponse>
+[JsonDerivedType(typeof(SetNicknameRequest), nameof(SetNicknameRequest))]
+public class SetNicknameRequest : ChatHubRequest<SuccessResponse>
 {
     public string? Nickname { get; init; }
 }

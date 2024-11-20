@@ -14,7 +14,7 @@ public abstract class WebSocketClient : WebSocketBase<WebSocketHelperClient, Cli
         set
         {
             if (value == _host) return;
-            
+
             _host = value;
 
             UpdateUri();
@@ -53,14 +53,14 @@ public abstract class WebSocketClient : WebSocketBase<WebSocketHelperClient, Cli
     public async Task<bool> Connect()
     {
         if (Helper.State == WebSocketState.Open || await Helper.Connect()) return true;
-        
+
         OnError?.Invoke(new Exception("WebSocketClientHelper is not connected."));
 
         return false;
 
     }
 
-    public async Task Disconnect(string? description = null) => await Helper.Close(description : description);
+    public async Task Disconnect(string? description = null) => await Helper.Close(description: description);
 
     public async new Task<TResponse?> SendRequest<TRequest, TResponse>(TRequest request) where TRequest : RequestBase<TResponse> where TResponse : ResponseBase
     {
@@ -72,7 +72,7 @@ public abstract class WebSocketClient : WebSocketBase<WebSocketHelperClient, Cli
         return await base.SendRequest<TRequest, TResponse>(request);
     }
 
-    public async new Task<bool> SendResponse<TResponse>(TResponse response) where TResponse: ResponseBase => Helper.State == WebSocketState.Open && await base.SendResponse(response);
+    public async new Task<bool> SendResponse<TResponse>(TResponse response) where TResponse : ResponseBase => Helper.State == WebSocketState.Open && await base.SendResponse(response);
 
     public async new Task<bool> SendMessage<TMessage>(TMessage message) where TMessage : MessageBase => Helper.State == WebSocketState.Open && await base.SendMessage(message);
 

@@ -5,8 +5,8 @@ using WebSocketChat.Shared.Model;
 namespace WebSocketChat.Shared.Endpoint.Payload;
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = TypeProperty)]
-[JsonDerivedType(typeof(ChatHubGetPeersConnectedResponse), typeDiscriminator: nameof(ChatHubGetPeersConnectedResponse))]
-public class ChatHubGetPeersConnectedResponse : ChatHubResponse
+[JsonDerivedType(typeof(GetPeersResponse), typeDiscriminator: nameof(GetPeersResponse))]
+public class GetPeersResponse : ChatHubResponse
 {
     public required IEnumerable<Peer> Peers { get; init; }
 }

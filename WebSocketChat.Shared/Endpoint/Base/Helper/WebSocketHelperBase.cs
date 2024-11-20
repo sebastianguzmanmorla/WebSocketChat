@@ -140,7 +140,7 @@ public abstract class WebSocketHelperBase<TWebSocket> : IAsyncDisposable
             OnError?.Invoke(new InvalidOperationException("WebSocket connection is not open"));
         }
     }
-    
+
     public async Task<bool> Send<TPayload>(TPayload payload) where TPayload : PayloadBase
     {
         string json = JsonSerializer.Serialize(payload, SerializerOptions);

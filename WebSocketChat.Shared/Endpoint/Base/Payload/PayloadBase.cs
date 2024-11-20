@@ -9,16 +9,19 @@ namespace WebSocketChat.Shared.Endpoint.Base.Payload;
 [JsonDerivedType(typeof(ChatHubMessage), nameof(ChatHubMessage))]
 [JsonDerivedType(typeof(ChatHubRequest<ChatHubResponse>), nameof(ChatHubRequest<ChatHubResponse>))]
 [JsonDerivedType(typeof(ChatHubResponse), nameof(ChatHubResponse))]
-[JsonDerivedType(typeof(ChatHubGetPeersConnectedRequest), nameof(ChatHubGetPeersConnectedRequest))]
-[JsonDerivedType(typeof(ChatHubGetPeersConnectedResponse), nameof(ChatHubGetPeersConnectedResponse))]
-[JsonDerivedType(typeof(ChatHubHeartbeatMessage), nameof(ChatHubHeartbeatMessage))]
-[JsonDerivedType(typeof(ChatHubLoginRequest), typeDiscriminator: nameof(ChatHubLoginRequest))]
-[JsonDerivedType(typeof(ChatHubLogoutRequest), typeDiscriminator: nameof(ChatHubLogoutRequest))]
-[JsonDerivedType(typeof(ChatHubSetNicknameRequest), typeDiscriminator: nameof(ChatHubSetNicknameRequest))]
-[JsonDerivedType(typeof(ChatHubSuccessResponse), typeDiscriminator: nameof(ChatHubSuccessResponse))]
+[JsonDerivedType(typeof(GetPeersRequest), nameof(GetPeersRequest))]
+[JsonDerivedType(typeof(GetPeersResponse), nameof(GetPeersResponse))]
+[JsonDerivedType(typeof(HeartbeatMessage), nameof(HeartbeatMessage))]
+[JsonDerivedType(typeof(LoginRequest), nameof(LoginRequest))]
+[JsonDerivedType(typeof(LogoutRequest), nameof(LogoutRequest))]
+[JsonDerivedType(typeof(PeerConnectedMessage), nameof(PeerConnectedMessage))]
+[JsonDerivedType(typeof(PeerDisconnectedMessage), nameof(PeerDisconnectedMessage))]
+[JsonDerivedType(typeof(SendTextMessage), nameof(SendTextMessage))]
+[JsonDerivedType(typeof(SetNicknameRequest), nameof(SetNicknameRequest))]
+[JsonDerivedType(typeof(SuccessResponse), nameof(SuccessResponse))]
 public class PayloadBase : IPayload
 {
     protected const string TypeProperty = "$type";
-    
+
     public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.Now;
 }

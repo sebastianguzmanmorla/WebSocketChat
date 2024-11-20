@@ -4,7 +4,7 @@ using WebSocketChat.Shared.Endpoint.Payload.Base;
 namespace WebSocketChat.Shared.Endpoint.Payload;
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = TypeProperty)]
-[JsonDerivedType(typeof(ChatHubGetPeersConnectedRequest), nameof(ChatHubGetPeersConnectedRequest))]
-public class ChatHubGetPeersConnectedRequest : ChatHubRequest<ChatHubGetPeersConnectedResponse>
+[JsonDerivedType(typeof(HeartbeatMessage), nameof(HeartbeatMessage))]
+public class HeartbeatMessage : ChatHubMessage
 {
 }

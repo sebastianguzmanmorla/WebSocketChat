@@ -1,40 +1,44 @@
-﻿using WebSocketChat.Shared.Endpoint;
-using WebSocketChat.Shared.Endpoint.Payload;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using WebSocketChat.Console;
+using WebSocketChat.Shared.Endpoint;
 
-Guid peerId = Guid.CreateVersion7();
+Settings settings = new();
 
-ChatHubEndpoint chatHubEndpoint = new()
+IConfigurationRoot configuration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile($"{nameof(Settings)}.json", optional: true, reloadOnChange: true)
+    .Build();
+
+configuration.Bind(settings);
+
+settings.Url ??= "ws://localhost:5230/";
+settings.PeerId ??= Guid.CreateVersion7();
+
+string json = JsonSerializer.Serialize(settings);
+
+File.WriteAllText($"{nameof(Settings)}.json", json);
+
+HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+
+builder.Configuration.AddConfiguration(configuration);
+
+builder.Services.AddLogging();
+
+builder.Services.AddSingleton(x => settings);
+
+builder.Services.AddSingleton(x => new ChatHubEndpoint(x.GetService<ILogger>())
 {
-    Host = "ws://localhost:5230/"
-};
-
-chatHubEndpoint.OnError += Console.WriteLine;
-
-await chatHubEndpoint.Connect();
-
-ChatHubLoginRequest loginRequest = new()
-{
-    PeerId = peerId,
-    Nickname = "John Doe"
-};
-
-ChatHubSuccessResponse? loginResponse = await chatHubEndpoint.SendRequest<ChatHubLoginRequest, ChatHubSuccessResponse>(loginRequest);
-
-ChatHubGetPeersConnectedResponse? peerListResponse = await chatHubEndpoint.SendRequest<ChatHubGetPeersConnectedRequest, ChatHubGetPeersConnectedResponse>(new ChatHubGetPeersConnectedRequest
-{
-    PeerId = peerId
+    Host = settings.Url
 });
 
-ChatHubSuccessResponse? logoutResponse = await chatHubEndpoint.SendRequest<ChatHubLogoutRequest, ChatHubSuccessResponse>(new ChatHubLogoutRequest
-{
-    PeerId = peerId
-});
+builder.Services.AddHostedService<MainService>();
 
-peerListResponse = await chatHubEndpoint.SendRequest<ChatHubGetPeersConnectedRequest, ChatHubGetPeersConnectedResponse>(new ChatHubGetPeersConnectedRequest
-{
-    PeerId = peerId
-});
+builder.Services.AddHostedService<SendTextService>();
 
-await chatHubEndpoint.Disconnect("bye");
+IHost app = builder.Build();
 
-Console.WriteLine(loginResponse);
+await app.RunAsync();

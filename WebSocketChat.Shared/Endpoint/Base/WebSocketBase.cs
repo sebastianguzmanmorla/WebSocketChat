@@ -112,7 +112,7 @@ public abstract class WebSocketBase<TWebSocketHelper, TWebSocket> : IAsyncDispos
     public async Task<bool> SendBytes(byte[] bytes) => await Helper.Send(bytes);
 
     public async Task<bool> SendText(string text) => await Helper.Send(text);
-    
+
     public async ValueTask DisposeAsync()
     {
         await Helper.DisposeAsync();

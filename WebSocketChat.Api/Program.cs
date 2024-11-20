@@ -4,22 +4,22 @@ using WebSocketChat.Shared.Endpoint;
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services
-    .AddLogging();
+builder.Services.AddLogging();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("redis"));
 
 WebApplication app = builder.Build();
 
-app.MapGet(ChatHubEndpoint.Path, async (IConnectionMultiplexer redis, HttpContext context) => {
+app.MapGet(ChatHubEndpoint.Path, async (IConnectionMultiplexer redis, HttpContext context) =>
+{
     if (context.WebSockets.IsWebSocketRequest)
     {
         await using ChatHubServer handler = new(
             connection: await context.WebSockets.AcceptWebSocketAsync(),
-            redisDatabase: redis.GetDatabase(),
+            redis: redis,
             logger: app.Logger
         );
-        
+
         await handler.Wait();
     }
     else

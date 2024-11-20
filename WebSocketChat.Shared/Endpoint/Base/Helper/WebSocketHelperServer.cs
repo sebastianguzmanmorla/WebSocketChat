@@ -18,7 +18,7 @@ public sealed class WebSocketHelperServer
         {
             _closeSource.TrySetResult();
         };
-        
+
         return _closeSource.Task;
     }
 }
